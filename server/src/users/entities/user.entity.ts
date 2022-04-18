@@ -1,29 +1,35 @@
-import { Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
+export enum UserRole {
+  admin,
+  user,
+}
+
+@Entity()
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ length: 50 })
   firstname: string;
 
-  @Column()
+  @Column({ length: 50 })
   lastname: string;
 
-  @Column()
+  @Column({ length: 50, nullable: false })
   email: string;
 
   @Column()
   password: string;
 
-  @Column()
+  @Column({ default: UserRole.user })
   role: string;
 
-  @Column({ default: [] })
-  chart: any;
+  @Column('int', { array: true, default: [] })
+  chart: string[];
 
-  @Column({ default: [] })
-  history: any;
+  @Column('int', { array: true, default: [] })
+  history: string[];
 
   @Column({ default: false })
   varified: boolean;
