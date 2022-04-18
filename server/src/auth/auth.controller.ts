@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Session } from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { AuthService } from './auth.service';
 
@@ -7,10 +7,10 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('/register')
-  register(@Body() body: CreateUserDto) {
+  async register(@Body() body: CreateUserDto, @Session() session: any) {
     const { email, password, firstname, lastname, role, varified } = body;
     console.log('body', body);
-    return this.authService.register(
+    const user = await this.authService.register(
       email,
       password,
       firstname,
@@ -18,12 +18,25 @@ export class AuthController {
       role,
       varified,
     );
+    session.userID = user.id;
+    const token = await this.authService.generateAuthToken(session);
+    session['x-access-token'] = token;
+    console.log('register session', session);
+    return user;
   }
 
   @Post('/login')
-  login(@Body() body: { email: string; password: string }) {
+  async login(
+    @Body() body: { email: string; password: string },
+    @Session() session: any,
+  ) {
     const { email, password } = body;
-    return this.authService.login(email, password);
+    const user = await this.authService.login(email, password);
+    session.userID = user.id;
+    const token = await this.authService.generateAuthToken(session);
+    session['x-access-token'] = token;
+    console.log('login session', session);
+    return user;
   }
 
   @Post('/logout')

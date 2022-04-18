@@ -1,8 +1,8 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 export enum UserRole {
-  admin,
-  user,
+  ADMIN = 'ADMIN',
+  USER = 'USER',
 }
 
 @Entity()
@@ -22,15 +22,18 @@ export class User {
   @Column()
   password: string;
 
-  @Column({ default: UserRole.user })
-  role: string;
+  @Column('enum', { enum: UserRole, default: UserRole.USER })
+  role: UserRole;
 
-  @Column('int', { array: true, default: [] })
+  @Column('text', { array: true, default: [] })
   chart: string[];
 
-  @Column('int', { array: true, default: [] })
+  @Column('text', { array: true, default: [] })
   history: string[];
 
-  @Column({ default: false })
+  @Column('boolean', { default: false })
   varified: boolean;
+
+  @Column({ default: '' })
+  token: string;
 }

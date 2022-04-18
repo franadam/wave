@@ -16,7 +16,7 @@ export class CreateUserDto {
 
   @IsString()
   @IsEnum(UserRole)
-  role: string;
+  role: UserRole;
 
   @IsBoolean()
   varified: boolean;
