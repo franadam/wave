@@ -1,5 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { hash, genSalt } from 'bcrypt';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { hash, genSalt, compare } from 'bcrypt';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
@@ -34,8 +39,12 @@ export class AuthService {
     return user;
   }
 
-  login() {
-    return 'login';
+  async login(email: string, password: string) {
+    const user = await this.userService.findOneByEmail(email);
+    if (!user) throw new NotFoundException('user not found');
+    const isMatch = await compare(password, user.password);
+    if (!isMatch) throw new UnauthorizedException('wrong credentials');
+    return user;
   }
 
   logout() {

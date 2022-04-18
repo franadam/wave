@@ -10,7 +10,6 @@ export class AuthController {
   register(@Body() body: CreateUserDto) {
     const { email, password, firstname, lastname, role, varified } = body;
     console.log('body', body);
-    console.log('first');
     return this.authService.register(
       email,
       password,
@@ -22,8 +21,9 @@ export class AuthController {
   }
 
   @Post('/login')
-  login() {
-    return this.authService.login();
+  login(@Body() body: { email: string; password: string }) {
+    const { email, password } = body;
+    return this.authService.login(email, password);
   }
 
   @Post('/logout')
