@@ -1,6 +1,19 @@
-import { Body, Controller, Get, Post, Session } from '@nestjs/common';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Request,
+  Session,
+  UseGuards,
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { CurrentUser } from '../users/decorators/current-user.decorator';
+import { CreateUserDto } from '../users/dto/create-user.dto';
+import { User } from '../users/entities/user.entity';
 import { AuthService } from './auth.service';
+import { JwtAuthGuard } from './Guards/jwt.guard';
+import { LocalAuthGuard } from './Guards/local.guard';
 
 @Controller('/api/auth')
 export class AuthController {
@@ -19,33 +32,53 @@ export class AuthController {
       varified,
     );
     session.userID = user.id;
-    const token = await this.authService.generateAuthToken(session);
+    const token = await this.authService.generateAuthToken(user.id);
     session['x-access-token'] = token;
     console.log('register session', session);
+    user.token = token;
     return user;
   }
 
+  // @UseGuards(AuthGuard('local'))
+  // @Post('/login')
+  // async login(
+  //   @Body() body: { email: string; password: string },
+  //   @Session() session: any,
+  //   @Request() req: any,
+  // ) {
+  //   const { email, password } = body;
+  //   const user = await this.authService.login(email, password);
+  //   session.userID = user.id;
+  //   const token = await this.authService.generateAuthToken(user.id);
+  //   user.token = token;
+  //   console.log('req.headers', req.headers);
+  //   session['x-access-token'] = token;
+  //   console.log('login session', session);
+  //   return user;
+  // }
+
+  @Get('/logout')
+  logout(@Session() session: any) {
+    this.authService.logout(session);
+  }
+
+  @Get('/isauth')
+  async isAuth(@CurrentUser() user: User) {
+    const login = await this.authService.isAuth(user);
+    return login ? login : 'Please login';
+  }
+
+  @UseGuards(LocalAuthGuard)
   @Post('/login')
-  async login(
-    @Body() body: { email: string; password: string },
-    @Session() session: any,
-  ) {
-    const { email, password } = body;
-    const user = await this.authService.login(email, password);
-    session.userID = user.id;
-    const token = await this.authService.generateAuthToken(session);
-    session['x-access-token'] = token;
-    console.log('login session', session);
-    return user;
+  async loginG(@Request() req) {
+    console.log('loginG', req.headers);
+    return this.authService.login(req.user);
   }
 
-  @Post('/logout')
-  logout() {
-    return this.authService.logout();
-  }
-
-  @Get('/isAuth')
-  isAuth() {
-    return this.authService.isAuth();
+  @UseGuards(JwtAuthGuard)
+  @Get('/profile')
+  getProfile(@Request() req) {
+    console.log('profile', req.headers);
+    return req.user || Object.keys(req);
   }
 }

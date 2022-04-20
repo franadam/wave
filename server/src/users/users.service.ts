@@ -8,6 +8,26 @@ import { User } from './entities/user.entity';
 @Injectable()
 export class UsersService {
   constructor(@InjectRepository(User) private userRepo: Repository<User>) {}
+  private readonly users = [
+    {
+      userId: 1,
+      username: 'john',
+      password: 'changeme',
+    },
+    {
+      userId: 2,
+      username: 'maria',
+      password: 'guess',
+    },
+  ];
+
+  async findOne(
+    username: string,
+  ): Promise<
+    { userId: number; username: string; password: string } | undefined
+  > {
+    return this.users.find((user) => user.username === username);
+  }
 
   create(createUserDto: CreateUserDto) {
     console.log('createUserDto', createUserDto);
@@ -19,12 +39,17 @@ export class UsersService {
     return `This action returns all users`;
   }
 
-  findOne(id: number) {
+  findOneById(id: number) {
+    if (!id) return null;
     return this.userRepo.findOne({ where: { id } });
   }
 
   findOneByEmail(email: string) {
     return this.userRepo.findOne({ where: { email } });
+  }
+
+  findOneByOptions(options: any) {
+    return this.userRepo.findOne({ where: { ...options } });
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
