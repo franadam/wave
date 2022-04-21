@@ -8,25 +8,9 @@ import { User } from './entities/user.entity';
 @Injectable()
 export class UsersService {
   constructor(@InjectRepository(User) private userRepo: Repository<User>) {}
-  private readonly users = [
-    {
-      userId: 1,
-      username: 'john',
-      password: 'changeme',
-    },
-    {
-      userId: 2,
-      username: 'maria',
-      password: 'guess',
-    },
-  ];
 
-  async findOne(
-    username: string,
-  ): Promise<
-    { userId: number; username: string; password: string } | undefined
-  > {
-    return this.users.find((user) => user.username === username);
+  async findOne(options: Partial<CreateUserDto>): Promise<User | undefined> {
+    return this.userRepo.findOne({ where: { ...options } });
   }
 
   create(createUserDto: CreateUserDto) {
@@ -36,20 +20,16 @@ export class UsersService {
   }
 
   findAll() {
-    return `This action returns all users`;
+    return this.userRepo.find();
   }
 
   findOneById(id: number) {
     if (!id) return null;
-    return this.userRepo.findOne({ where: { id } });
+    return this.userRepo.findOneBy({ id });
   }
 
   findOneByEmail(email: string) {
-    return this.userRepo.findOne({ where: { email } });
-  }
-
-  findOneByOptions(options: any) {
-    return this.userRepo.findOne({ where: { ...options } });
+    return this.userRepo.findOne({ where: [{ email }, { username: email }] });
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

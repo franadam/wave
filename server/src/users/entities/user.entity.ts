@@ -16,7 +16,10 @@ export class User {
   @Column({ length: 50 })
   lastname: string;
 
-  @Column({ length: 50, nullable: false })
+  @Column({ length: 50, default: '' })
+  username: string;
+
+  @Column({ length: 50 })
   email: string;
 
   @Column()

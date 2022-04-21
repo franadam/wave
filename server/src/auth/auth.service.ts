@@ -27,9 +27,9 @@ export class AuthService {
   ) {
     const usedEmail = await this.usersService.findOneByEmail(email);
 
-    // if (usedEmail) {
-    //   throw new BadRequestException('email in used');
-    // }
+    if (usedEmail) {
+      throw new BadRequestException('email in used');
+    }
 
     const salt = await genSalt(8);
     const hashedPassword = await hash(password, salt);
@@ -47,7 +47,7 @@ export class AuthService {
 
   async login(user: any) {
     console.log('authservice login >> ', user);
-    const payload = { username: user.username, sub: user.userId };
+    const payload = { email: user.email, sub: user.id };
     return {
       access_token: this.jwtService.sign(payload, {
         secret: process.env.JWT_SECRET,
@@ -56,12 +56,11 @@ export class AuthService {
   }
 
   async loginJWT(email: string, password: string) {
-    const user = await this.usersService.findOneByOptions({
+    const user = await this.usersService.findOne({
       email,
-      firstname: 'bob',
     });
     if (!user) throw new NotFoundException('user not found');
-    const isMatch = await compare(password, user.password);
+    const isMatch = await this.comparePassword(password, user.password);
     if (!isMatch) throw new UnauthorizedException('wrong credentials');
     return user;
   }
@@ -77,25 +76,24 @@ export class AuthService {
 
   async generateAuthToken(userID: number) {
     const user = await this.usersService.findOneById(userID);
-    const payload = { sub: user.id.toString() };
+    const payload = { sub: user.id.toString(), email: user.email };
     const token = this.jwtService.sign(payload, {
       secret: 'secret',
     });
     return token;
   }
 
-  // async validate(email: string, password: string): Promise<any> {
-  //   console.log('auth service >> validate');
-  //   const user = await this.login(email, password);
-  //   console.log('auth service validate >> user', user);
-  //   if (!user) return null;
-  //   return user;
-  // }
+  async comparePassword(password: string, hashedPassword: string) {
+    const isMatch = await compare(password, hashedPassword);
+    if (!isMatch) throw new UnauthorizedException('wrong credentials');
+    return isMatch;
+  }
 
-  async validateUser(username: string, pass: string): Promise<any> {
-    const user = await this.usersService.findOne(username);
-    console.log('auth service validateUser >> user', user);
-    if (user && user.password === pass) {
+  async validateUser(email: string, password: string): Promise<any> {
+    const user = await this.usersService.findOneByEmail(email);
+    const isMatch = await this.comparePassword(password, user.password);
+    console.log('auth service validateUser >> user', user, isMatch);
+    if (user && isMatch) {
       const { password, ...result } = user;
       return result;
     }
