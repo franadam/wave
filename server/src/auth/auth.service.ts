@@ -2,12 +2,11 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-  Session,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { hash, genSalt, compare } from 'bcrypt';
-import { User, UserRole } from 'src/users/entities/user.entity';
+import { User, UserRole } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
@@ -45,14 +44,19 @@ export class AuthService {
     return user;
   }
 
-  async login(user: any) {
+  async login(user: User) {
     console.log('authservice login >> ', user);
     const payload = { email: user.email, sub: user.id };
-    return {
-      access_token: this.jwtService.sign(payload, {
-        secret: process.env.JWT_SECRET,
-      }),
-    };
+    const token = await this.jwtService.sign(payload, {
+      secret: process.env.JWT_SECRET,
+    });
+    user.token = token;
+    return user;
+  }
+
+  logout(user: User) {
+    user.token = '';
+    return user;
   }
 
   async loginJWT(email: string, password: string) {
@@ -63,15 +67,6 @@ export class AuthService {
     const isMatch = await this.comparePassword(password, user.password);
     if (!isMatch) throw new UnauthorizedException('wrong credentials');
     return user;
-  }
-
-  logout(session: any) {
-    session.userID = null;
-    return 'logout';
-  }
-
-  isAuth(user: User) {
-    return !!user;
   }
 
   async generateAuthToken(userID: number) {
