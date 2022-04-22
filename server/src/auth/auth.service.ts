@@ -23,7 +23,7 @@ export class AuthService {
     lastname: string,
     role: UserRole,
     varified: boolean,
-  ) {
+  ): Promise<User> {
     const usedEmail = await this.usersService.findOneByEmail(email);
 
     if (usedEmail) {
