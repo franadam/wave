@@ -15,10 +15,19 @@ import { UserRole } from './entities/user.entity';
 import { Roles } from './decorators/roles.decorator';
 import { RolesGuard } from './guards/roles.guard';
 import { JwtAuthGuard } from 'src/auth/Guards/jwt.guard';
+import { CheckPolicies } from './decorators/policies.decorator';
+import { PoliciesGuard } from './guards/policies.gard';
+import { AppAbility } from '../casl/casl-ability.factory';
+import { Article } from '../article/entities/article.entity';
+import { Action } from '../interfaces/role.action';
+import { ArticleService } from '../article/article.service';
 
 @Controller('/api/users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly articleService: ArticleService,
+  ) {}
 
   @Get('/admin')
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -28,6 +37,13 @@ export class UsersController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Article))
+  findAllArt(@Request() req: Request) {
+    console.log('findAllArt>> req', req.headers);
+    return this.articleService.findAll();
+  }
+
   findAll() {
     return this.usersService.findAll();
   }
