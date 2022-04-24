@@ -19,6 +19,7 @@
     }
   },
   "dependencies": {
-    "concurrently": "^7.1.0"
+    "concurrently": "^7.1.0",
+    "nest-access-control": "^2.2.0"
   }
 }

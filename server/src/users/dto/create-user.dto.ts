@@ -1,5 +1,5 @@
 import { IsBoolean, IsEmail, IsEnum, IsString } from 'class-validator';
-import { UserRole } from '../entities/user.entity';
+import { UserRole } from '../../roles/users.roles';
 
 export class CreateUserDto {
   @IsString()
@@ -16,7 +16,7 @@ export class CreateUserDto {
 
   @IsString()
   @IsEnum(UserRole)
-  role: UserRole;
+  roles: UserRole;
 
   @IsBoolean()
   varified: boolean;

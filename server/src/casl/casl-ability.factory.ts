@@ -6,9 +6,10 @@ import {
   InferSubjects,
 } from '@casl/ability';
 import { Injectable } from '@nestjs/common';
+import { UserRole } from '../roles/users.roles';
 import { Article } from '../article/entities/article.entity';
 import { Action } from '../interfaces/role.action';
-import { User, UserRole } from '../users/entities/user.entity';
+import { User } from '../users/entities/user.entity';
 
 type Subjects = InferSubjects<typeof Article | typeof User> | 'all';
 
@@ -21,7 +22,7 @@ export class CaslAbilityFactory {
       Ability<[Action, Subjects]>
     >(Ability as AbilityClass<AppAbility>);
 
-    if (user.role === UserRole.ADMIN) {
+    if (user.roles === UserRole.ADMIN) {
       can(Action.Manage, 'all'); // read-write access to everything
     } else {
       can(Action.Read, 'all'); // read-only access to everything

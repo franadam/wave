@@ -1,9 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-
-export enum UserRole {
-  ADMIN = 'ADMIN',
-  USER = 'USER',
-}
+import { UserRole } from '../../roles/users.roles';
 
 @Entity()
 export class User {
@@ -26,7 +22,7 @@ export class User {
   password: string;
 
   @Column('enum', { enum: UserRole, default: UserRole.USER })
-  role: UserRole;
+  roles: UserRole;
 
   @Column('text', { array: true, default: [] })
   chart: string[];

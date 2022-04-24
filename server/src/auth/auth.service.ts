@@ -6,7 +6,8 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { hash, genSalt, compare } from 'bcrypt';
-import { User, UserRole } from '../users/entities/user.entity';
+import { UserRole } from '../roles/users.roles';
+import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
@@ -21,7 +22,7 @@ export class AuthService {
     password: string,
     firstname: string,
     lastname: string,
-    role: UserRole,
+    roles: UserRole,
     varified: boolean,
   ): Promise<User> {
     const usedEmail = await this.usersService.findOneByEmail(email);
@@ -38,7 +39,7 @@ export class AuthService {
       password: hashedPassword,
       firstname,
       lastname,
-      role,
+      roles,
       varified,
     });
     return user;

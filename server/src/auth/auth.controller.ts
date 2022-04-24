@@ -25,14 +25,14 @@ export class AuthController {
 
   @Post('/register')
   async register(@Body() body: CreateUserDto, @Session() session: any) {
-    const { email, password, firstname, lastname, role, varified } = body;
+    const { email, password, firstname, lastname, roles, varified } = body;
     console.log('body', body);
     const user = await this.authService.register(
       email,
       password,
       firstname,
       lastname,
-      role,
+      roles,
       varified,
     );
     session.userID = user.id;

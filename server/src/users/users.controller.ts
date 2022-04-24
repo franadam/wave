@@ -11,16 +11,17 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserRole } from './entities/user.entity';
 import { Roles } from './decorators/roles.decorator';
 import { RolesGuard } from './guards/roles.guard';
 import { JwtAuthGuard } from 'src/auth/Guards/jwt.guard';
 import { CheckPolicies } from './decorators/policies.decorator';
-import { PoliciesGuard } from './guards/policies.gard';
+import { PoliciesGuard } from './guards/policies.guard';
 import { AppAbility } from '../casl/casl-ability.factory';
 import { Article } from '../article/entities/article.entity';
 import { Action } from '../interfaces/role.action';
 import { ArticleService } from '../article/article.service';
+import { UserRole } from '../roles/users.roles';
+import { ACGuard, UseRoles, UserRoles } from 'nest-access-control';
 
 @Controller('/api/users')
 export class UsersController {
@@ -44,6 +45,20 @@ export class UsersController {
     return this.articleService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard, ACGuard)
+  @UseRoles({
+    resource: 'profile',
+    action: 'create',
+    possession: 'any',
+  })
+  @Get('/profile')
+  findAllAC(@Request() req: Request, @UserRoles() userRoles: UserRole) {
+    console.log('findAllAC>> req', req.headers);
+    console.log('userRoles', userRoles);
+    return this.articleService.findAll();
+  }
+
+  @Get()
   findAll() {
     return this.usersService.findAll();
   }
